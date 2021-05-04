@@ -1,0 +1,120 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+
+<!-- Create an element where the map will take place -->
+<svg id="my_dataviz" width="660" height="600"></svg>
+
+
+<script>
+	console.log("ok");
+
+// The svg
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+// Map and projection
+var projection = d3.geoMercator()
+    .scale(85)
+    .translate([width/2, height/2*1.3])
+
+// A path generator
+var path = d3.geoPath()
+    .projection(projection)
+
+// Load world shape AND list of connection
+d3.queue()
+  .defer(d3.json, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")  // World shape
+  //.defer(d3.csv, "https://raw.githubusercontent.com/OhBlockByJames/InternationalMigrant_D3.js/main/data_connectionmap.csv") // Position of circles
+  .defer(d3.csv, "https://raw.githubusercontent.com/OhBlockByJames/InternationalMigrant_D3.js/main/top5map.csv")
+  .defer(d3.csv,"https://raw.githubusercontent.com/OhBlockByJames/InternationalMigrant_D3.js/main/top5.csv")
+  .await(ready);
+
+function ready(error, dataGeo, data, migrant) {
+
+    // Reformat the list of link. Note that columns in csv file are called long1, long2, lat1, lat2
+    var link = []
+    data.forEach(function(row){
+      source = [+row.long1, +row.lat1]
+      target = [+row.long2, +row.lat2]
+      topush = {type: "LineString", coordinates: [source, target]}
+      link.push(topush)
+    })
+//console.log(link[24]);
+
+    data.forEach(function(row){
+    link.push(row.twothousandtwentyall)
+    })
+//console.log(link[49]);
+    //console.log(num[1]);
+
+var name = " "
+    
+    migrant.forEach(function(m){
+      name = name +"    origin:"+ m.origin + "    dest:" + m.dest
+    })
+
+    //console.log(name);
+
+
+    // Draw the map
+    svg.append("g")
+        .selectAll("path")
+        .data(dataGeo.features)
+        .enter().append("path")
+            .attr("fill", "#b8b8b8")
+            .attr("d", d3.geoPath()
+                .projection(projection))
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+
+    // Add the path
+   //  svg.selectAll("myPath")
+   //    .data(link)
+   //    .enter()
+   //    .append("path")
+   //      .attr("d", function(d){ return path(d)})
+   //      .style("fill", "none")
+   //      //.style("stroke", "#69b3a2")
+   //      .style("stroke", function(d) { 
+   //      if (d.twothousandtwentyall >= 2000000 ) {return "#FF0000 "
+   //  }
+   //      else if (d.twothousandtwentyall >= 1000000){return "#AE0000 "} 
+   //      else { 
+			// console.log(d.twothousandtwentyall);
+   //      	return "#0000E3" }
+   //      ;})
+   //      .style("stroke-width", 2)
+
+
+    svg.selectAll("myPath")
+      .data(link)
+      .enter()
+      .append("path")
+        .attr("d", function(d){ return path(d)})
+        .style("fill", "none")
+        .style("stroke", "#FF0000")
+//         .style("stroke", function(i) 
+//         { 
+//         let b = link.slice(25,49);
+//         let sign =3;
+//         //console.log(link[d]);
+//         for (let d =0 ;d<24;d++){
+//         if (b[d] >= 2000000 ) { sign = 0}
+//         else if (b[d] >= 1000000){ sign =1} 
+//         else { sign = 2;
+//          };
+//         }
+// }
+// )
+        .style("stroke-width", 2)
+
+}
+
+</script>
